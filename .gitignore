@@ -1,0 +1,49 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+secrets.toml
+
+# Databases (SQLite / Local development tests)
+*.db
+*.sqlite3
+*.sqlite3-journal
+
+# Testing & Coverage
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.nox/
+.tox/
+
+# Production/Distribution builds
+build/
+dist/
+*.egg-info/
+
+# IDEs & Editors
+.vscode/
+.idea/
+*.swp
+*~
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# Optional: Deployment & Cloud Specific
+.vercel
+.serverless/

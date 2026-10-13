@@ -1,0 +1,14 @@
+fastapi==0.115.*
+uvicorn[standard]==0.32.*
+jinja2==3.1.*
+python-multipart==0.0.*
+numpy<2
+opencv-python-headless==4.10.*
+python-dotenv
+# Face recognition. NOTE the pip names: `face_recognition` (one word, underscores) — NOT
+# "face recognition" — and `opencv-python` / `opencv-python-headless` (never just "opencv").
+# dlib builds from source on install (needs cmake + a C++ toolchain); on Python >= 3.12
+# face_recognition_models still needs pkg_resources, so keep setuptools below 81.
+face_recognition>=1.3.0
+dlib>=19.24
+setuptools<81

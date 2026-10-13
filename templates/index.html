@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="app">
+  <header>
+    <h1>Gym Check-in</h1>
+    <nav>
+      <button class="tab active" data-tab="scan">Check in</button>
+      <button class="tab" data-tab="enroll">Enrol member (staff)</button>
+    </nav>
+  </header>
+  <div id="panel-scan"></div>
+  <div id="panel-enroll"></div>
+</main>
+
+{# The React app had no router: both "pages" are tabs on this one URL. Each tab's markup ships
+   inside a <template> (inert, zero layout) and is cloned in by JS on tab activation, so a tab
+   switch remounts a fresh panel exactly like React's key= remount (camera stops, WS closes). #}
+<template id="tpl-scan">{% include "pages/scan.html" %}</template>
+<template id="tpl-enroll">{% include "pages/enroll.html" %}</template>
+{% endblock %}

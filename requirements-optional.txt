@@ -1,0 +1,3 @@
+# Optional: object detection (phone / screen / book / laptop in front of the face).
+# Enable with OBJECT_DETECTION=1. Pulls in PyTorch (large download).
+ultralytics>=8.3

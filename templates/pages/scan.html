@@ -1,0 +1,27 @@
+{# Scanner tab: static skeleton of Scanner.jsx + CameraStage.jsx.
+   JS composes the panel children per state (see static/js/pages/scan.js); every element here
+   is persistent and re-used across renders, exactly like React re-uses DOM nodes via diffing. #}
+<div class="panel">
+  <div class="stage">
+    <video data-video playsinline muted></video>
+    <svg class="guide" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <ellipse cx="50" cy="50" rx="22" ry="35" class="ring ring-base tone-idle" data-ring-base></ellipse>
+      <ellipse cx="50" cy="50" rx="22" ry="35" pathLength="100" class="ring ring-progress tone-idle" stroke-dasharray="0 100" data-ring-progress></ellipse>
+    </svg>
+    <div class="overlay" data-cam-loading>Starting camera…</div>
+    <div class="overlay err" data-cam-error></div>
+  </div>
+
+  <form class="row" data-form>
+    <input data-member-id placeholder="Member ID (optional)" maxlength="32" />
+    <button>Start scan</button>
+  </form>
+  <p class="msg bad" data-error></p>
+  <div class="msg good" data-status>
+    <strong data-status-message></strong>
+    <div class="steps" data-steps></div>
+  </div>
+  <p class="msg" data-connecting>Connecting…</p>
+  <div class="msg big ok" data-done></div>
+  <pre class="metrics" data-metrics></pre>
+</div>
