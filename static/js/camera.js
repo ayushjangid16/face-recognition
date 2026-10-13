@@ -4,36 +4,90 @@
 //
 // NOTE: getUserMedia is only allowed in a secure context -> serve over HTTPS or localhost.
 
+let sharedStream = null;
+let startingPromise = null;
+
+function isLive(stream) {
+  if (!stream) return false;
+  const tracks = stream.getVideoTracks();
+  return tracks.length > 0 && tracks[0].readyState === "live";
+}
+
+async function getStream() {
+  if (isLive(sharedStream)) {
+    return sharedStream;
+  }
+  if (startingPromise) {
+    return startingPromise;
+  }
+  if (!navigator.mediaDevices?.getUserMedia) {
+    throw new Error("insecure");
+  }
+  if (sharedStream) {
+    try {
+      sharedStream.getTracks().forEach((t) => t.stop());
+    } catch {}
+    sharedStream = null;
+  }
+  startingPromise = (async () => {
+    try {
+      sharedStream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" },
+        audio: false,
+      });
+      return sharedStream;
+    } finally {
+      startingPromise = null;
+    }
+  })();
+  return startingPromise;
+}
+
 export function createCamera(video, { loading, error: errorEl } = {}) {
-  let stream = null;
   let cancelled = false;
   let ready = false;
   let canvas = null;
 
   function stop() {
     cancelled = true;
-    if (stream) stream.getTracks().forEach((t) => t.stop());
-    stream = null;
+    ready = false;
+    if (video) {
+      try { video.pause(); } catch {}
+      video.srcObject = null;
+    }
   }
 
   function showError(message) {
     loading?.remove();
     if (!errorEl) return;
     errorEl.textContent = message;
-    errorEl.remove();
+    errorEl.style.display = "";
     video.parentElement?.appendChild(errorEl);   // React renders the overlay only on error
   }
 
   async function start() {
     try {
-      if (!navigator.mediaDevices?.getUserMedia) throw new Error("insecure");
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" },
-        audio: false,
-      });
+      video.muted = true;
+      video.autoplay = true;
+      video.playsInline = true;
+      const stream = await getStream();
       if (cancelled) return stop();
       video.srcObject = stream;
-      await video.play();
+
+      const onPlaying = () => {
+        ready = true;
+        loading?.remove();
+        errorEl?.remove();
+      };
+
+      if (video.readyState >= 2) {
+        onPlaying();
+      } else {
+        video.onloadeddata = onPlaying;
+        video.onplaying = onPlaying;
+      }
+
+      await video.play().catch(() => {});
       ready = true;
       loading?.remove();
       errorEl?.remove();
@@ -41,7 +95,7 @@ export function createCamera(video, { loading, error: errorEl } = {}) {
       if (cancelled) return;
       if (e.message === "insecure") showError("Camera needs HTTPS (or localhost).");
       else if (e.name === "NotAllowedError") showError("Camera permission was denied.");
-      else showError("Could not open the camera.");
+      else showError("Could not open the camera: " + (e.message || e.name));
     }
   }
 
@@ -59,4 +113,11 @@ export function createCamera(video, { loading, error: errorEl } = {}) {
   }
 
   return { start, stop, capture, isReady: () => ready };
+}
+
+export function releaseCamera() {
+  if (sharedStream) {
+    sharedStream.getTracks().forEach((t) => t.stop());
+    sharedStream = null;
+  }
 }

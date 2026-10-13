@@ -15,8 +15,8 @@ export function mountScanner(root) {
   const video = panel.querySelector("[data-video]");
   const loading = panel.querySelector("[data-cam-loading]");
   const camError = panel.querySelector("[data-cam-error]");
-  const form = panel.querySelector("[data-form]");
-  const input = panel.querySelector("[data-member-id]");
+  const scanControls = panel.querySelector("[data-scan-controls]");
+  const startBtn = panel.querySelector("[data-start-scan]");
   const errorEl = panel.querySelector("[data-error]");
   const statusEl = panel.querySelector("[data-status]");
   const statusMessage = panel.querySelector("[data-status-message]");
@@ -46,23 +46,48 @@ export function mountScanner(root) {
 
   function render() {
     const nodes = [stage];
-    if (phase !== "scanning" && phase !== "done") nodes.push(form);
+    if (phase !== "scanning" && phase !== "done") {
+      if (scanControls) {
+        scanControls.style.display = "";
+        nodes.push(scanControls);
+      }
+    } else {
+      if (scanControls) scanControls.style.display = "none";
+    }
     if (error && !hiddenTerminal) {
       errorEl.textContent = error;
+      errorEl.style.display = "";
       nodes.push(errorEl);
+    } else {
+      errorEl.style.display = "none";
+      errorEl.textContent = "";
     }
     if (phase === "scanning" && status && !hiddenTerminal) {
       showStatus(status);
+      statusEl.style.display = "";
       nodes.push(statusEl);
+    } else {
+      statusEl.style.display = "none";
     }
-    if (phase === "scanning" && !status && !hiddenTerminal) nodes.push(connectingEl);
+    if (phase === "scanning" && !status && !hiddenTerminal) {
+      connectingEl.style.display = "";
+      nodes.push(connectingEl);
+    } else {
+      connectingEl.style.display = "none";
+    }
     if (phase === "done" && status && !hiddenTerminal) {
       showDone(status);
+      doneEl.style.display = "";
       nodes.push(doneEl);
+    } else {
+      doneEl.style.display = "none";
     }
     if (status && status.metrics && !hiddenTerminal) {
       metricsEl.textContent = JSON.stringify(status.metrics);
+      metricsEl.style.display = "";
       nodes.push(metricsEl);
+    } else {
+      metricsEl.style.display = "none";
     }
     compose(panel, nodes);
     setTone();
@@ -114,10 +139,7 @@ export function mountScanner(root) {
       return render();
     }
     try {
-      // member_id is optional: the server identifies the person 1:N from their face alone.
-      // Typing an ID still works (used for the start-time checks only, never for recognition).
-      const body = input.value.trim() ? { member_id: input.value.trim() } : {};
-      const s = await api("/api/scan/start", { method: "POST", body });
+      const s = await api("/api/scan/start", { method: "POST", body: {} });
       if (disposed) return;
       if (s.already_marked) {
         status = { state: "MARKED", message: `Hi ${s.name}, you're already checked in (${fmtTime(s.at)}).` };
@@ -130,6 +152,13 @@ export function mountScanner(root) {
       error = err.message;
       render();
     }
+  }
+
+  function handleClose() {
+    if (disposed || finished) return;
+    error = "Connection lost. Please try again.";
+    phase = "idle";
+    render();
   }
 
   function openSocket(token) {
@@ -173,7 +202,6 @@ export function mountScanner(root) {
         error = "";
         status = null;
         phase = "idle";
-        input.value = "";
         render();
         start();                 // restart the scan (with the new token) on its own
       }, RETRY_DELAY_MS);
@@ -195,11 +223,9 @@ export function mountScanner(root) {
 
   setTone();                   // initial idle tone
   cam.start();                  // open the webcam (same as the Enroll page does)
-  syncCamRing();               // start the camera ring in sync with the preview
 
-  form.addEventListener("submit", start);
+  if (startBtn) startBtn.addEventListener("click", start);
   render();
-  input.focus();
 
   return function unmount() {
     disposed = true;

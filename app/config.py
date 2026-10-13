@@ -21,7 +21,7 @@ class Settings:
     data_dir: str = os.getenv("DATA_DIR", "./data")
     admin_key: str = os.getenv("ADMIN_KEY", "ADMIN")
     cors_origins: tuple = tuple(
-        o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:8000").split(",") if o.strip()
+        o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:8000,http://127.0.0.1:8000,http://0.0.0.0:8000").split(",") if o.strip()
     )
     debug: bool = os.getenv("DEBUG_METRICS", "0") == "1"  # adds raw metrics to WS replies (for tuning)
 

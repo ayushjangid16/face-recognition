@@ -4,6 +4,8 @@ import { api } from "../api.js";
 import { createCamera } from "../camera.js";
 import { clear, compose, el } from "../ui.js";
 
+const ADMIN_KEY = "ADMIN";
+
 const PROMPTS = [
   "Look straight at the camera",
   "Turn slightly to the left",
@@ -21,7 +23,6 @@ export function mountEnroller(root) {
   const loading = panel.querySelector("[data-cam-loading]");
   const camError = panel.querySelector("[data-cam-error]");
   const form = panel.querySelector("[data-form]");
-  const adminKeyInput = form.querySelector("[data-admin-key]");
   const memberIdInput = form.querySelector("[data-member-id]");
   const nameInput = form.querySelector("[data-name]");
   const beginBtn = form.querySelector("[data-begin]");
@@ -43,19 +44,22 @@ export function mountEnroller(root) {
   let busy = false;
   let note = { kind: "", text: "" };
 
-  adminKeyInput.value = "ADMIN"
-
   const cam = createCamera(video, { loading, error: camError });
-  camError.remove();            // React renders the error overlay only when there is an error
+  // camError.remove();            // React renders the error overlay only when there is an error
   cam.start();
 
   function render() {
     const nodes = [stage];
     if (!started) {
       updateBeginDisabled();          // inputs were cleared by finish(): recompute the gate
+      form.style.display = "";
+      captureCol.style.display = "none";
       nodes.push(form);
     } else {
+      form.style.display = "none";
+      captureCol.style.display = "";
       clear(progressMsg);
+      progressMsg.style.display = "";
       progressMsg.appendChild(el("strong", "", nameInput.value || memberIdInput.value));
       progressMsg.appendChild(document.createTextNode(`: ${samples} photo(s) captured (minimum ${needed}).`));
       promptEl.textContent = PROMPTS[step];
@@ -67,7 +71,11 @@ export function mountEnroller(root) {
     if (note.text) {
       noteEl.className = `msg ${note.kind}`;
       noteEl.textContent = note.text;
+      noteEl.style.display = "";
       nodes.push(noteEl);
+    } else {
+      noteEl.style.display = "none";
+      noteEl.textContent = "";
     }
     compose(panel, nodes);
     setTone();
@@ -81,18 +89,18 @@ export function mountEnroller(root) {
   }
 
   function updateBeginDisabled() {
-    beginBtn.disabled = !adminKeyInput.value || !memberIdInput.value.trim() || !nameInput.value.trim();
+    beginBtn.disabled = !memberIdInput.value.trim() || !nameInput.value.trim();
   }
 
   async function begin(e) {
-    e.preventDefault();
+    e?.preventDefault();
     note = { kind: "", text: "" };
     try {
-      sessionStorage.setItem("adminKey", adminKeyInput.value);
+      sessionStorage.setItem("adminKey", ADMIN_KEY);
       const r = await api("/api/admin/members", {
         method: "POST",
         body: { member_id: memberIdInput.value.trim(), name: nameInput.value },
-        adminKey: adminKeyInput.value,
+        adminKey: ADMIN_KEY,
       });
       samples = r.samples;
       needed = r.needed;
@@ -117,7 +125,7 @@ export function mountEnroller(root) {
       const r = await api(`/api/admin/members/${memberIdInput.value.trim()}/enroll`, {
         method: "POST",
         form: upload,
-        adminKey: adminKeyInput.value,
+        adminKey: ADMIN_KEY,
       });
       samples = r.samples;
       ready = r.ready;
@@ -140,7 +148,7 @@ export function mountEnroller(root) {
     try {
       await api(`/api/admin/members/${memberIdInput.value.trim()}/reset`, {
         method: "POST",
-        adminKey: adminKeyInput.value,
+        adminKey: ADMIN_KEY,
       });
       samples = 0;
       ready = false;
@@ -163,8 +171,9 @@ export function mountEnroller(root) {
     render();
   }
 
-  for (const input of [adminKeyInput, memberIdInput, nameInput]) input.addEventListener("input", updateBeginDisabled);
+  for (const input of [memberIdInput, nameInput]) input.addEventListener("input", updateBeginDisabled);
 
+  beginBtn.addEventListener("click", begin);
   form.addEventListener("submit", begin);
   captureBtn.addEventListener("click", capture);
   startOverBtn.addEventListener("click", startOver);

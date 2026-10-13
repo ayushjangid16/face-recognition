@@ -49,20 +49,19 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
         if request.url.path.startswith("/static/"):
-            # Content-hash query (?v=) busts the cache on every deploy, so a day of caching is safe.
-            response.headers.setdefault("Cache-Control", "public, max-age=86400")
+            response.headers["Cache-Control"] = "no-cache, must-revalidate"
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
         response.headers.setdefault("X-Frame-Options", "DENY")
         response.headers.setdefault("Referrer-Policy", "same-origin")
         response.headers.setdefault("Permissions-Policy", "camera=(self)")
         # Everything self-hosted; ws:/wss: only needed because some browsers do not treat
         # 'self' as covering an upgraded WebSocket to the same host.
-        response.headers.setdefault(
-            "Content-Security-Policy",
-            "default-src 'self'; script-src 'self'; style-src 'self'; "
-            "img-src 'self' data:; media-src 'self'; font-src 'self'; "
-            "connect-src 'self' ws: wss:; object-src 'none'; base-uri 'self'; "
-            "form-action 'self'; frame-ancestors 'none'",
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "script-src 'self'; "
+            "img-src 'self' data: https:; "
+            "font-src 'self' data:;"
         )
         return response
 
@@ -71,7 +70,7 @@ router = APIRouter()
 
 
 def _index(request: Request):
-    return templates.TemplateResponse(request, "index.html", {})
+    return templates.TemplateResponse(request, "index.html", {"build": _build_id()})
 
 
 @router.get("/", include_in_schema=False)

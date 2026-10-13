@@ -19,16 +19,38 @@ const containers = {
 let active = null;
 let cleanup = null;
 
+function detachVideos(element) {
+  if (!element) return;
+  const videos = element.querySelectorAll("video");
+  for (const v of videos) {
+    try { v.pause(); } catch {}
+    v.srcObject = null;
+  }
+}
+
 function switchTab(tab) {
   if (!tabs[tab] || tab === active) return;                 // clicking the active tab does nothing
-  if (active) { cleanup?.(); containers[active].replaceChildren(); }
+  if (cleanup) {
+    try { cleanup(); } catch (e) { console.error("Cleanup error:", e); }
+    cleanup = null;
+  }
+  for (const c of Object.values(containers)) {
+    detachVideos(c);
+    c.replaceChildren();
+  }
+
+  active = tab;
+  for (const btn of buttons) btn.classList.toggle("active", btn.dataset.tab === tab);
 
   const template = document.getElementById(`tpl-${tab}`);
-  containers[tab].appendChild(template.content.cloneNode(true));
-  cleanup = tabs[tab].mount(containers[tab]) || null;
-  active = tab;
-
-  for (const btn of buttons) btn.classList.toggle("active", btn.dataset.tab === tab);
+  if (template) {
+    containers[tab].appendChild(template.content.cloneNode(true));
+    try {
+      cleanup = tabs[tab].mount(containers[tab]) || null;
+    } catch (e) {
+      console.error(`Mount error for tab ${tab}:`, e);
+    }
+  }
 }
 
 for (const btn of buttons) btn.addEventListener("click", () => switchTab(btn.dataset.tab));

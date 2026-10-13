@@ -5,7 +5,7 @@
 // app had neither: a drop surfaces as "Connection lost. Please try again." and the user restarts.
 export function openScanSocket(token, { onOpen, onMessage, onClose } = {}) {
   const proto = location.protocol === "https:" ? "wss" : "ws";
-  const ws = new WebSocket(`ws://localhost:8000/ws/scan/${token}`);
+  const ws = new WebSocket(`${proto}://${location.host}/ws/scan/${token}`);
   if (onOpen) ws.onopen = onOpen;
   if (onMessage) ws.onmessage = onMessage;
   if (onClose) ws.onclose = onClose;

@@ -1,31 +1,31 @@
 {# Enrol tab: static skeleton of Enroll.jsx + CameraStage.jsx. See static/js/pages/enroll.js. #}
 <div class="panel">
   <div class="stage">
-    <video data-video playsinline muted></video>
+    <video class="video" data-video autoplay playsinline muted></video>
     <svg class="guide" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
       <ellipse cx="50" cy="50" rx="22" ry="35" class="ring ring-base tone-idle" data-ring-base></ellipse>
-      <ellipse cx="50" cy="50" rx="22" ry="35" pathLength="100" class="ring ring-progress tone-idle" stroke-dasharray="0 100" data-ring-progress></ellipse>
+      <ellipse cx="50" cy="50" rx="22" ry="35" pathLength="100" class="ring ring-progress tone-idle"
+        stroke-dasharray="0 100" data-ring-progress></ellipse>
     </svg>
     <div class="overlay" data-cam-loading>Starting camera…</div>
-    <div class="overlay err" data-cam-error></div>
+    <div class="overlay err" data-cam-error style="display: none;"></div>
   </div>
 
   <form class="col" data-form>
-    <!-- <input type="password" data-admin-key placeholder="Staff key" /> -->
-    <input data-member-id placeholder="Member ID" maxlength="32" />
-    <input data-name placeholder="Full name" maxlength="80" />
-    <button data-begin disabled>Start enrolment</button>
+    <input data-member-id type="text" />
+    <input data-name type="text" />
+    <button type="button" data-begin disabled>Start enrolment</button>
   </form>
 
-  <div class="col" data-capture-col>
-    <p class="msg" data-progress-msg></p>
+  <div class="col" data-capture-col style="display: none;">
+    <p class="msg" data-progress-msg style="display: none;"></p>
     <p class="prompt" data-prompt></p>
     <div class="row">
-      <button data-capture>Capture</button>
-      <button class="secondary" data-start-over>Start over</button>
-      <button class="secondary" data-finish disabled>Finish</button>
+      <button type="button" data-capture>Capture</button>
+      <button type="button" class="secondary" data-start-over>Start over</button>
+      <button type="button" class="secondary" data-finish disabled>Finish</button>
     </div>
   </div>
 
-  <p class="msg" data-note></p>
+  <p class="msg" data-note style="display: none;"></p>
 </div>

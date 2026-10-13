@@ -30,19 +30,11 @@ export function compose(panel, nodes) {
   for (const child of Array.from(panel.children)) {
     if (!nodes.includes(child)) child.remove();
   }
-  // 2) place the rest, walking BACKWARDS: when nodes[i] is placed, nodes[i+1] (the reference we
-  //    insert before) was already attached by the previous iteration.
-  for (let i = nodes.length - 1; i >= 0; i--) {
+  // 2) place nodes in order without moving nodes already in place
+  for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
-    const nextByIdx = nodes[i + 1];     // the node that SHOULD be right after us in the final DOM
-    if (nextByIdx && nextByIdx.parentElement === panel && nextByIdx.nextSibling != null) {
-      // TRUST the contract with the renderer: the reference node is where we expect it.
-      if (node.parentElement !== panel || node.nextSibling !== nextByIdx)
-        panel.insertBefore(node, nextByIdx);
-    } else {
-      // FALLBACK: another mutation changed the DOM since we listed nodes; anchor off the
-      // current firstChild so we still land in the right position without throwing.
-      panel.insertBefore(node, panel.firstChild);
+    if (panel.children[i] !== node) {
+      panel.insertBefore(node, panel.children[i] || null);
     }
   }
 }
