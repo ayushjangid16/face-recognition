@@ -73,7 +73,6 @@ class Guard:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
-    print(os.getenv("ADMIN_KEY"))
     if S.admin_key == "change-me":
         log.warning("ADMIN_KEY is still the default. Set a strong value before exposing this server.")
     ctx.engine = FaceEngine()

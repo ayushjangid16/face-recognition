@@ -1,0 +1,48 @@
+# --- Secrets: never bake the real .env into the image -----------------------
+.env
+.env.*
+!.env.example
+
+# --- Local / biometric data: never ship data/gallery.db ---------------------
+data/
+*.db
+*.db-journal
+*.sqlite3
+*.sqlite3-journal
+
+# --- Virtualenvs, caches, build artifacts -----------------------------------
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# --- VCS / tooling / dev-only files -----------------------------------------
+.git/
+.gitignore
+.freebuff/
+tests/
+scripts/
+legacy_frontend/
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# --- Not needed inside the image --------------------------------------------
+README.md
+requirements-optional.txt
+Dockerfile
+.dockerignore
