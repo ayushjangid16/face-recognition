@@ -239,10 +239,6 @@ def scan_start(req: StartReq, request: Request):
 async def ws_scan(ws: WebSocket, token: str):
     origin = ws.headers.get("origin")
 
-    print("Origin:", repr(origin))
-    print("Allowed origins:", repr(S.cors_origins))
-    print("Token exists:", token in sessions)
-
     # 1. Validate Origin before accepting the connection.
     allowed = set(S.cors_origins) | {"http://localhost:8000", "http://127.0.0.1:8000", "http://0.0.0.0:8000"}
     if origin and origin not in allowed:
